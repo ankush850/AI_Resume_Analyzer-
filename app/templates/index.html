@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Resume Analyzer</h1>
+            <p>Upload your resume to get instant analysis and insights</p>
+        </header>
+        
+        <main>
+            <div class="upload-section">
+                <div class="upload-box" id="dropZone">
+                    <div class="upload-content">
+                        <div class="upload-icon">📄</div>
+                        <p>Drag & drop your resume here</p>
+                        <p class="small-text">or</p>
+                        <button id="browseBtn">Browse Files</button>
+                        <input type="file" id="fileInput" accept=".pdf,.docx,.txt" hidden>
+                    </div>
+                </div>
+                <div class="file-info" id="fileInfo" style="display: none;">
+                    <span id="fileName"></span>
+                    <button id="removeFile">✕</button>
+                </div>
+                <button id="analyzeBtn" class="analyze-btn" disabled>Analyze Resume</button>
+            </div>
+            
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <h2>Analysis Results</h2>
+                <div class="result-card">
+                    <h3>Summary</h3>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <span class="label">Word Count</span>
+                            <span class="value" id="wordCount">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">Experience Level</span>
+                            <span class="value" id="experienceLevel">0 years</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">Skills Found</span>
+                            <span class="value" id="skillsCount">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <h3>Contact Information</h3>
+                    <div class="contact-info">
+                        <div class="info-group">
+                            <span class="label">Emails:</span>
+                            <span id="emails">None found</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="label">Phone Numbers:</span>
+                            <span id="phones">None found</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <h3>Top Keywords</h3>
+                    <div class="keywords-container" id="keywordsContainer">
+                        <!-- Keywords will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <h3>Identified Skills</h3>
+                    <div class="skills-container" id="skillsContainer">
+                        <!-- Skills will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Analyzing your resume...</p>
+            </div>
+            
+            <div class="error-message" id="errorMessage" style="display: none;">
+                <p id="errorMessageText"></p>
+            </div>
+        </main>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
