@@ -33,6 +33,52 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 # Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# Extended skill keywords for better matching
+SKILL_KEYWORDS = [
+    'python', 'java', 'javascript', 'html', 'css', 'sql', 'react', 'angular', 
+    'node', 'django', 'flask', 'spring', 'aws', 'docker', 'kubernetes',
+    'machine learning', 'data analysis', 'project management', 'communication',
+    'teamwork', 'leadership', 'problem solving', 'research', 'design',
+    'c++', 'c#', 'ruby', 'php', 'swift', 'kotlin', 'go', 'rust',
+    'tensorflow', 'pytorch', 'scikit-learn', 'pandas', 'numpy', 'matplotlib',
+    'git', 'jenkins', 'travis ci', 'circle ci', 'github', 'gitlab',
+    'mysql', 'postgresql', 'mongodb', 'redis', 'elasticsearch',
+    'linux', 'ubuntu', 'centos', 'bash', 'shell scripting',
+    'agile', 'scrum', 'kanban', 'jira', 'confluence',
+    'excel', 'tableau', 'power bi', 'spark', 'hadoop',
+    'networking', 'security', 'encryption', 'firewall',
+    'api', 'rest', 'graphql', 'soap', 'microservices',
+    'testing', 'unit testing', 'integration testing', 'selenium',
+    'devops', 'ci/cd', 'terraform', 'ansible', 'puppet',
+    'cloud', 'azure', 'gcp', 'firebase', 'heroku',
+    'mobile development', 'android', 'ios', 'flutter', 'react native',
+    'database design', 'orm', 'hibernate', 'entity framework',
+    'ux/ui', 'wireframing', 'prototyping', 'adobe creative suite',
+    'seo', 'digital marketing', 'content management', 'wordpress',
+    'salesforce', 'sap', 'oracle', 'erp', 'crm',
+    'financial analysis', 'risk management', 'accounting', 'auditing',
+    'customer service', 'technical support', 'troubleshooting',
+    'product management', 'business analysis', 'requirements gathering',
+    'quality assurance', 'qa', 'six sigma', 'lean',
+    'copywriting', 'technical writing', 'documentation',
+    'public speaking', 'presentation', 'negotiation',
+    'time management', 'organization', 'multitasking',
+    'critical thinking', 'creativity', 'innovation',
+    'foreign languages', 'spanish', 'french', 'german', 'chinese',
+    'data visualization', 'd3.js', 'chart.js', 'plotly',
+    'blockchain', 'cryptocurrency', 'ethereum', 'smart contracts',
+    'artificial intelligence', 'natural language processing', 'computer vision',
+    'iot', 'embedded systems', 'arduino', 'raspberry pi',
+    'cybersecurity', 'penetration testing', 'vulnerability assessment',
+    'big data', 'data mining', 'data warehousing',
+    'robotics', 'automation', 'control systems',
+    'supply chain', 'logistics', 'inventory management',
+    'human resources', 'recruitment', 'training',
+    'legal', 'compliance', 'regulatory affairs',
+    'healthcare', 'clinical research', 'patient care',
+    'construction', 'civil engineering', 'structural analysis'
+]
+
 def extract_text_from_pdf(pdf_path):
     """Extract text from PDF file"""
     try:
@@ -81,6 +127,15 @@ def preprocess_text(text):
     
     return filtered_tokens
 
+def extract_skills_from_text(text):
+    """Extract skills from text"""
+    found_skills = []
+    text_lower = text.lower()
+    for skill in SKILL_KEYWORDS:
+        if skill in text_lower:
+            found_skills.append(skill.title())
+    return list(set(found_skills))  # Remove duplicates
+
 def analyze_resume(text):
     """Analyze resume text and extract insights"""
     # Preprocess text
@@ -90,19 +145,8 @@ def analyze_resume(text):
     word_freq = Counter(tokens)
     most_common_words = dict(word_freq.most_common(20))
     
-    # Extract potential skills (simplified approach)
-    skill_keywords = [
-        'python', 'java', 'javascript', 'html', 'css', 'sql', 'react', 'angular', 
-        'node', 'django', 'flask', 'spring', 'aws', 'docker', 'kubernetes',
-        'machine learning', 'data analysis', 'project management', 'communication',
-        'teamwork', 'leadership', 'problem solving', 'research', 'design'
-    ]
-    
-    found_skills = []
-    text_lower = text.lower()
-    for skill in skill_keywords:
-        if skill in text_lower:
-            found_skills.append(skill.title())
+    # Extract potential skills
+    found_skills = extract_skills_from_text(text)
     
     # Estimate experience (simple word count approach)
     word_count = len(tokens)
@@ -126,6 +170,32 @@ def analyze_resume(text):
         }
     }
 
+def analyze_skills_match(resume_skills, job_description):
+    """Compare resume skills with job description and calculate match score"""
+    if not job_description.strip():
+        return None
+    
+    # Extract skills from job description
+    job_skills = extract_skills_from_text(job_description)
+    
+    if not job_skills:
+        return None
+    
+    # Calculate match score
+    matching_skills = set(resume_skills) & set(job_skills)
+    missing_skills = set(job_skills) - set(resume_skills)
+    
+    match_score = int((len(matching_skills) / len(job_skills)) * 100)
+    
+    return {
+        'match_score': match_score,
+        'matching_skills': list(matching_skills),
+        'missing_skills': list(missing_skills),
+        'matching_skills_count': len(matching_skills),
+        'missing_skills_count': len(missing_skills),
+        'total_job_skills': len(job_skills)
+    }
+
 @app.route('/')
 def index():
     """Render the main page"""
@@ -138,6 +208,8 @@ def analyze():
         return jsonify({'error': 'No file uploaded'}), 400
     
     file = request.files['resume']
+    job_description = request.form.get('job_description', '')
+    
     if file.filename is None or file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
     
@@ -166,6 +238,12 @@ def analyze():
         
         # Analyze the resume
         analysis_result = analyze_resume(text)
+        
+        # Analyze skills match if job description is provided
+        if job_description:
+            skills_match = analyze_skills_match(analysis_result['skills'], job_description)
+            if skills_match:
+                analysis_result['skills_match'] = skills_match
         
         # Clean up temporary file
         if os.path.exists(filepath):
