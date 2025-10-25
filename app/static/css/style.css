@@ -131,6 +131,86 @@ button:disabled {
     justify-content: center;
 }
 
+/* Job Description Styles */
+.job-description-section {
+    text-align: left;
+    margin: 20px 0;
+}
+
+.job-description-section h3 {
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+#jobDescription {
+    width: 100%;
+    min-height: 120px;
+    padding: 15px;
+    border: 2px solid #e1e5f2;
+    border-radius: 8px;
+    font-size: 1rem;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+}
+
+#jobDescription:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Skills Match Styles */
+.match-score {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+}
+
+.score-value {
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.match-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.match-item {
+    background: #f8f9ff;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.match-item .label {
+    display: block;
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.match-item .value {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #667eea;
+}
+
 .results-section {
     background: white;
     border-radius: 15px;
@@ -270,5 +350,9 @@ button:disabled {
     .info-group .label {
         width: auto;
         margin-bottom: 5px;
+    }
+    
+    .match-details {
+        grid-template-columns: 1fr;
     }
 }
