@@ -28,11 +28,44 @@
                     <span id="fileName"></span>
                     <button id="removeFile">✕</button>
                 </div>
+                
+                <!-- Job Description Input -->
+                <div class="job-description-section">
+                    <h3>Job Description (Optional)</h3>
+                    <textarea id="jobDescription" placeholder="Paste the job description here to compare skills and get a match score..."></textarea>
+                </div>
+                
                 <button id="analyzeBtn" class="analyze-btn" disabled>Analyze Resume</button>
             </div>
             
             <div class="results-section" id="resultsSection" style="display: none;">
                 <h2>Analysis Results</h2>
+                
+                <!-- Skills Match Section -->
+                <div class="result-card" id="skillsMatchSection" style="display: none;">
+                    <h3>Skills Match Analysis</h3>
+                    <div class="match-score">
+                        <div class="score-circle">
+                            <span class="score-value" id="matchScore">0%</span>
+                        </div>
+                        <p>Skills Match Score</p>
+                    </div>
+                    <div class="match-details">
+                        <div class="match-item">
+                            <span class="label">Matching Skills:</span>
+                            <span class="value" id="matchingSkills">0</span>
+                        </div>
+                        <div class="match-item">
+                            <span class="label">Missing Skills:</span>
+                            <span class="value" id="missingSkills">0</span>
+                        </div>
+                    </div>
+                    <div class="skills-container" id="missingSkillsContainer">
+                        <h4>Recommended Skills to Add:</h4>
+                        <!-- Missing skills will be populated here -->
+                    </div>
+                </div>
+                
                 <div class="result-card">
                     <h3>Summary</h3>
                     <div class="summary-grid">
