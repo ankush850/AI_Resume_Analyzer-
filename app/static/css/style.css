@@ -160,6 +160,135 @@ button:disabled {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+/* Experience Timeline Styles */
+.timeline-container {
+    overflow-x: auto;
+    padding: 20px 0;
+}
+
+.timeline {
+    position: relative;
+    min-width: 600px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: calc(100% - 40px);
+    background: #667eea;
+}
+
+.timeline-entry {
+    position: relative;
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+.timeline-entry:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-entry:nth-child(odd) {
+    padding-right: calc(50% + 30px);
+    text-align: right;
+}
+
+.timeline-entry:nth-child(even) {
+    padding-left: calc(50% + 30px);
+    text-align: left;
+}
+
+.timeline-badge {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #667eea;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    z-index: 1;
+}
+
+.timeline-panel {
+    background: #f8f9ff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-panel h4 {
+    margin-top: 0;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.timeline-panel .company {
+    font-weight: bold;
+    color: #667eea;
+}
+
+.timeline-panel .duration {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 5px 0;
+}
+
+.timeline-panel .gap-warning {
+    color: #ff6b6b;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.timeline-summary {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f0f5ff;
+    border-radius: 10px;
+}
+
+.timeline-summary h4 {
+    margin-top: 0;
+    color: #333;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.summary-item {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.summary-item .label {
+    display: block;
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.summary-item .value {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #667eea;
+}
+
 /* Skills Match Styles */
 .match-score {
     text-align: center;
@@ -235,13 +364,13 @@ button:disabled {
     font-size: 1.4rem;
 }
 
-.summary-grid {
+.summary-grid-default {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
 }
 
-.summary-item {
+.summary-item-default {
     background: #f8f9ff;
     padding: 20px;
     border-radius: 10px;
@@ -339,7 +468,7 @@ button:disabled {
         padding: 20px;
     }
     
-    .summary-grid {
+    .summary-grid-default {
         grid-template-columns: 1fr;
     }
     
@@ -354,5 +483,21 @@ button:disabled {
     
     .match-details {
         grid-template-columns: 1fr;
+    }
+    
+    /* Mobile timeline adjustments */
+    .timeline::before {
+        left: 30px;
+    }
+    
+    .timeline-entry:nth-child(odd),
+    .timeline-entry:nth-child(even) {
+        padding-left: 70px;
+        padding-right: 20px;
+        text-align: left;
+    }
+    
+    .timeline-badge {
+        left: 30px;
     }
 }
