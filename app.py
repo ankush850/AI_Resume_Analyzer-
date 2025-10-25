@@ -8,6 +8,8 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from collections import Counter
 import string
+from datetime import datetime
+import dateutil.parser as date_parser
 
 # Download required NLTK data
 try:
@@ -136,6 +138,148 @@ def extract_skills_from_text(text):
             found_skills.append(skill.title())
     return list(set(found_skills))  # Remove duplicates
 
+def parse_date(date_str):
+    """Parse date string and return datetime object"""
+    try:
+        # Handle common date formats
+        if date_str.lower() in ['present', 'current', 'now']:
+            return datetime.now()
+        
+        # Try to parse the date
+        return date_parser.parse(date_str)
+    except:
+        return None
+
+def extract_experience_timeline(text):
+    """Extract experience timeline from resume text"""
+    # Look for work experience sections
+    experience_patterns = [
+        r'(?:work\s+experience|employment\s+history|professional\s+experience)(?:.*?)(?=(?:education|skills|projects|certifications|awards|references|$))',
+        r'(?:employment|work\s+history)(?:.*?)(?=(?:education|skills|projects|certifications|awards|references|$))'
+    ]
+    
+    experience_section = ""
+    for pattern in experience_patterns:
+        match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+        if match:
+            experience_section = match.group(0)
+            break
+    
+    if not experience_section:
+        # If no clear section found, try to find job entries throughout the text
+        experience_section = text
+    
+    # Extract job entries using regex patterns
+    job_pattern = r'(?:position|title|job|role):\s*([^\n]+?)(?:\s+at\s+|\s*[-–—]\s*)([^\n]+?)\s*(?:dates?|duration|period):\s*([^\n]+?)(?:\s+to\s+|\s*[-–—]\s*)([^\n]+)'
+    job_matches = re.findall(job_pattern, experience_section, re.IGNORECASE)
+    
+    # Alternative pattern for job entries
+    alt_job_pattern = r'([^\n]+?)\s*(?:at|@)\s*([^\n]+?)\s*\(?([^\n]*?(?:\d{4}|\d{1,2}/\d{4}|[a-zA-Z]+\s+\d{4}))[^\n]*?[-–—][^\n]*?([^\n]*?(?:\d{4}|\d{1,2}/\d{4}|[a-zA-Z]+\s+\d{4}|present|current))'
+    alt_job_matches = re.findall(alt_job_pattern, experience_section, re.IGNORECASE)
+    
+    jobs = []
+    
+    # Process job matches
+    for match in job_matches:
+        title, company, start_date, end_date = match
+        jobs.append({
+            'title': title.strip(),
+            'company': company.strip(),
+            'start_date': start_date.strip(),
+            'end_date': end_date.strip()
+        })
+    
+    # Process alternative job matches
+    for match in alt_job_matches:
+        title, company, start_date, end_date = match
+        jobs.append({
+            'title': title.strip(),
+            'company': company.strip(),
+            'start_date': start_date.strip(),
+            'end_date': end_date.strip()
+        })
+    
+    # If we couldn't extract structured job data, try a simpler approach
+    if not jobs:
+        # Look for lines that might contain job information
+        lines = experience_section.split('\n')
+        for i, line in enumerate(lines):
+            # Look for patterns like "Job Title at Company (Date - Date)"
+            job_pattern_simple = r'([^\n]+?)\s+(?:at|@)\s+([^\n]+?)\s*\(([^)]+)\)'
+            match = re.search(job_pattern_simple, line, re.IGNORECASE)
+            if match:
+                title, company, dates = match.groups()
+                # Try to split dates
+                date_parts = re.split(r'\s*[-–—]\s*', dates)
+                start_date = date_parts[0] if len(date_parts) > 0 else ""
+                end_date = date_parts[1] if len(date_parts) > 1 else ""
+                
+                jobs.append({
+                    'title': title.strip(),
+                    'company': company.strip(),
+                    'start_date': start_date.strip(),
+                    'end_date': end_date.strip()
+                })
+    
+    # Sort jobs by date if possible
+    jobs_with_dates = []
+    for job in jobs:
+        start_date = parse_date(job['start_date'])
+        end_date = parse_date(job['end_date']) if job['end_date'].lower() not in ['present', 'current', 'now'] else datetime.now()
+        
+        if start_date:
+            jobs_with_dates.append({
+                'title': job['title'],
+                'company': job['company'],
+                'start_date': job['start_date'],
+                'end_date': job['end_date'],
+                'start_date_obj': start_date,
+                'end_date_obj': end_date
+            })
+    
+    # Sort by start date
+    jobs_with_dates.sort(key=lambda x: x['start_date_obj'])
+    
+    # Calculate employment gaps
+    timeline_data = []
+    total_experience_months = 0
+    employment_gaps = 0
+    longest_gap_months = 0
+    
+    for i, job in enumerate(jobs_with_dates):
+        gap_before_months = 0
+        if i > 0:
+            # Calculate gap between this job and the previous one
+            prev_job = jobs_with_dates[i-1]
+            gap = (job['start_date_obj'] - prev_job['end_date_obj']).days
+            gap_before_months = max(0, gap // 30)  # Convert to months
+            
+            if gap_before_months > 3:  # Consider it a gap if more than 3 months
+                employment_gaps += 1
+                longest_gap_months = max(longest_gap_months, gap_before_months)
+        
+        timeline_data.append({
+            'title': job['title'],
+            'company': job['company'],
+            'start_date': job['start_date'],
+            'end_date': job['end_date'],
+            'gap_before_months': gap_before_months
+        })
+        
+        # Calculate experience duration for this job
+        duration = (job['end_date_obj'] - job['start_date_obj']).days
+        total_experience_months += max(0, duration // 30)
+    
+    if timeline_data:
+        return {
+            'jobs': timeline_data,
+            'total_experience_years': round(total_experience_months / 12, 1),
+            'employment_gaps_count': employment_gaps,
+            'longest_gap_months': longest_gap_months
+        }
+    
+    return None
+
 def analyze_resume(text):
     """Analyze resume text and extract insights"""
     # Preprocess text
@@ -159,6 +303,9 @@ def analyze_resume(text):
     emails = re.findall(email_pattern, text)
     phones = re.findall(phone_pattern, text)
     
+    # Extract experience timeline
+    experience_timeline = extract_experience_timeline(text)
+    
     return {
         'word_count': len(tokens),
         'most_common_words': most_common_words,
@@ -167,7 +314,8 @@ def analyze_resume(text):
         'contact_info': {
             'emails': emails[:3],  # Limit to first 3 emails
             'phones': [''.join(phone) for phone in phones[:3]]  # Limit to first 3 phones
-        }
+        },
+        'experience_timeline': experience_timeline
     }
 
 def analyze_skills_match(resume_skills, job_description):
