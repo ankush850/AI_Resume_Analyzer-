@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const loading = document.getElementById('loading');
     const errorMessage = document.getElementById('errorMessage');
     const errorMessageText = document.getElementById('errorMessageText');
+    const jobDescription = document.getElementById('jobDescription');
     
     let selectedFile = null;
     
@@ -105,6 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create FormData object
         const formData = new FormData();
         formData.append('resume', selectedFile);
+        formData.append('job_description', jobDescription.value);
         
         // Send AJAX request
         fetch('/analyze', {
@@ -183,6 +185,39 @@ document.addEventListener('DOMContentLoaded', function() {
             const noSkills = document.createElement('p');
             noSkills.textContent = 'No skills detected';
             skillsContainer.appendChild(noSkills);
+        }
+        
+        // Display skills match analysis if available
+        const skillsMatchSection = document.getElementById('skillsMatchSection');
+        if (data.skills_match) {
+            skillsMatchSection.style.display = 'block';
+            document.getElementById('matchScore').textContent = `${data.skills_match.match_score}%`;
+            document.getElementById('matchingSkills').textContent = data.skills_match.matching_skills_count;
+            document.getElementById('missingSkills').textContent = data.skills_match.missing_skills_count;
+            
+            // Populate missing skills
+            const missingSkillsContainer = document.getElementById('missingSkillsContainer');
+            missingSkillsContainer.innerHTML = '<h4>Recommended Skills to Add:</h4>';
+            
+            if (data.skills_match.missing_skills && data.skills_match.missing_skills.length > 0) {
+                const missingSkillsList = document.createElement('div');
+                missingSkillsList.className = 'skills-container';
+                
+                data.skills_match.missing_skills.forEach(skill => {
+                    const skillTag = document.createElement('span');
+                    skillTag.className = 'skill-tag';
+                    skillTag.textContent = skill;
+                    missingSkillsList.appendChild(skillTag);
+                });
+                
+                missingSkillsContainer.appendChild(missingSkillsList);
+            } else {
+                const noMissingSkills = document.createElement('p');
+                noMissingSkills.textContent = 'No missing skills found!';
+                missingSkillsContainer.appendChild(noMissingSkills);
+            }
+        } else {
+            skillsMatchSection.style.display = 'none';
         }
         
         // Show results section
