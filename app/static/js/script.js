@@ -157,6 +157,15 @@ document.addEventListener('DOMContentLoaded', function() {
             phonesElement.textContent = 'None found';
         }
         
+        // Display experience timeline if available
+        const timelineSection = document.getElementById('timelineSection');
+        if (data.experience_timeline) {
+            timelineSection.style.display = 'block';
+            displayTimeline(data.experience_timeline);
+        } else {
+            timelineSection.style.display = 'none';
+        }
+        
         // Populate keywords
         const keywordsContainer = document.getElementById('keywordsContainer');
         keywordsContainer.innerHTML = '';
@@ -225,6 +234,76 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Scroll to results
         resultsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Display experience timeline
+    function displayTimeline(timelineData) {
+        const timelineContainer = document.getElementById('experienceTimeline');
+        timelineContainer.innerHTML = '';
+        
+        // Create timeline entries
+        timelineData.jobs.forEach((job, index) => {
+            const entry = document.createElement('div');
+            entry.className = 'timeline-entry';
+            
+            const badge = document.createElement('div');
+            badge.className = 'timeline-badge';
+            badge.textContent = index + 1;
+            
+            const panel = document.createElement('div');
+            panel.className = 'timeline-panel';
+            
+            const title = document.createElement('h4');
+            title.textContent = job.title;
+            
+            const company = document.createElement('div');
+            company.className = 'company';
+            company.textContent = job.company;
+            
+            const duration = document.createElement('div');
+            duration.className = 'duration';
+            duration.textContent = `${job.start_date} - ${job.end_date}`;
+            
+            panel.appendChild(title);
+            panel.appendChild(company);
+            panel.appendChild(duration);
+            
+            // Add gap warning if this job has an employment gap before it
+            if (job.gap_before_months && job.gap_before_months > 3) {
+                const gapWarning = document.createElement('div');
+                gapWarning.className = 'gap-warning';
+                gapWarning.textContent = `Employment gap: ${job.gap_before_months} months`;
+                panel.appendChild(gapWarning);
+            }
+            
+            entry.appendChild(badge);
+            entry.appendChild(panel);
+            timelineContainer.appendChild(entry);
+        });
+        
+        // Display timeline summary
+        const summaryContainer = document.getElementById('timelineSummary');
+        summaryContainer.innerHTML = '<h4>Career Summary</h4>';
+        
+        const summaryGrid = document.createElement('div');
+        summaryGrid.className = 'summary-grid';
+        
+        const totalExperienceItem = document.createElement('div');
+        totalExperienceItem.className = 'summary-item';
+        totalExperienceItem.innerHTML = '<span class="label">Total Experience</span><span class="value">' + timelineData.total_experience_years + ' years</span>';
+        
+        const employmentGapsItem = document.createElement('div');
+        employmentGapsItem.className = 'summary-item';
+        employmentGapsItem.innerHTML = '<span class="label">Employment Gaps</span><span class="value">' + timelineData.employment_gaps_count + '</span>';
+        
+        const longestGapItem = document.createElement('div');
+        longestGapItem.className = 'summary-item';
+        longestGapItem.innerHTML = '<span class="label">Longest Gap</span><span class="value">' + timelineData.longest_gap_months + ' months</span>';
+        
+        summaryGrid.appendChild(totalExperienceItem);
+        summaryGrid.appendChild(employmentGapsItem);
+        summaryGrid.appendChild(longestGapItem);
+        summaryContainer.appendChild(summaryGrid);
     }
     
     // Show error message
